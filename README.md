@@ -36,24 +36,80 @@ cd pdf-processor
 pip install -r requirements.txt
 ```
 
+## Virtual Environment Setup
+
+It's recommended to use a virtual environment to avoid conflicts with other Python projects. Here's how to set it up:
+
+### On macOS/Linux:
+
+1. Create a virtual environment:
+
+```bash
+python3 -m venv venv
+```
+
+2. Activate the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+3. Install dependencies in the virtual environment:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. To deactivate the virtual environment when you're done:
+
+```bash
+deactivate
+```
+
+### On Windows:
+
+1. Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+2. Activate the virtual environment:
+
+```bash
+.\venv\Scripts\activate
+```
+
+3. Install dependencies in the virtual environment:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. To deactivate the virtual environment when you're done:
+
+```bash
+deactivate
+```
+
 ## Usage
 
 ### Basic Usage
 
 ```bash
-python pdf_processor.py input.pdf
+python src/pdf_processor.py input.pdf
 ```
 
 ### With Password (for encrypted PDFs)
 
 ```bash
-python pdf_processor.py input.pdf --password your_password
+python src/pdf_processor.py input.pdf --password your_password
 ```
 
 ### Custom Output Directory
 
 ```bash
-python pdf_processor.py input.pdf --output-dir custom_directory
+python src/pdf_processor.py input.pdf --output-dir custom_directory
 ```
 
 ## Command Line Arguments
@@ -120,7 +176,7 @@ The processor includes comprehensive error handling for:
 
 ```bash
 # Process an encrypted PDF and save to custom directory
-python pdf_processor.py statement.pdf --password mypass123 --output-dir processed_statements
+python src/pdf_processor.py statement.pdf --password mypass123 --output-dir processed_statements
 ```
 
 ## Limitations
