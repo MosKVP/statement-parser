@@ -1,2 +1,147 @@
-# statement-parser
-Parse your statement into CSV file
+# Statement Parser
+
+A Python utility for processing PDF bank statements, extracting transaction tables, and converting them to CSV format with data validation and cleaning.
+
+## Features
+
+- PDF decryption support for password-protected files
+- Automatic table detection and extraction
+- Transaction data validation and cleaning
+- Payment transaction filtering
+- Data type conversion (dates and amounts)
+- Balance validation
+- CSV output generation
+
+## Requirements
+
+- Python 3.6+
+- Dependencies:
+  - PyPDF2
+  - pandas
+  - docling
+  - decimal
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd pdf-processor
+```
+
+2. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+### Basic Usage
+
+```bash
+python pdf_processor.py input.pdf
+```
+
+### With Password (for encrypted PDFs)
+
+```bash
+python pdf_processor.py input.pdf --password your_password
+```
+
+### Custom Output Directory
+
+```bash
+python pdf_processor.py input.pdf --output-dir custom_directory
+```
+
+## Command Line Arguments
+
+- `input`: Path to the input PDF file (required)
+- `--password`: Password for encrypted PDF files (optional)
+- `--output-dir`: Directory for output files (default: 'output')
+
+## Processing Steps
+
+1. **PDF Decryption**: If the PDF is encrypted, it's decrypted using the provided password.
+2. **Table Extraction**: Tables are automatically detected and extracted from the PDF.
+3. **Data Validation**:
+   - Validates table structure and column headers
+   - Checks for correct date formats
+   - Validates amount formats
+   - Verifies transaction totals against starting and ending balances
+4. **Data Cleaning**:
+   - Removes rows with null values
+   - Filters out invalid dates and amounts
+   - Removes payment transactions (negative amounts with descriptions starting with 'Payment')
+5. **Data Type Conversion**:
+   - Converts dates to datetime format
+   - Converts amounts to Decimal type
+6. **Output Generation**: Saves processed data to CSV format in the specified output directory
+
+## Output Format
+
+The generated CSV file contains the following columns:
+
+1. Transaction Date (datetime)
+2. Description (text)
+3. Amount (decimal)
+
+## Error Handling
+
+The processor includes comprehensive error handling for:
+
+- File not found errors
+- Incorrect PDF passwords
+- Invalid table formats
+- Data validation failures
+- Balance verification errors
+
+## Functions Reference
+
+### Main Functions
+
+- `main()`: Entry point, handles command line arguments and orchestrates processing
+- `process_pdf(pdf_path, output_dir, original_path)`: Main processing function for PDF files
+- `get_pdf_bytes(input_path, password)`: Handles PDF decryption and reading
+
+### Data Processing Functions
+
+- `clean_amount(amount_str)`: Cleans and formats amount strings
+- `validate_transaction_table_columns(df, table_index)`: Validates table structure
+- `convert_data_types(df)`: Converts column data types
+- `validate_transaction_totals(df, starting_balance, ending_balance)`: Validates transaction totals
+- `clean_transaction_data(df)`: Cleans and filters transaction data
+- `filter_payment_transactions(df)`: Filters out payment transactions
+- `save_to_csv(df, output_dir, original_filename)`: Saves results to CSV
+
+## Example
+
+```bash
+# Process an encrypted PDF and save to custom directory
+python pdf_processor.py statement.pdf --password mypass123 --output-dir processed_statements
+```
+
+## Limitations
+
+- Only processes PDFs with consistent table formats
+- Requires specific column headers in transaction tables
+- Payment transactions are filtered out by default
+- All amounts must be in the same currency (BAHT)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+[Add your license information here]
+
+## Author
+
+[Add author information here]
