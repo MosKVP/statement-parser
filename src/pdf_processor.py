@@ -1,6 +1,8 @@
 import PyPDF2
 import argparse
-from docling.document_converter import DocumentConverter
+from docling.datamodel.base_models import InputFormat
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.datamodel.pipeline_options import PdfPipelineOptions
 import os
 import pandas as pd
 from decimal import Decimal
@@ -136,6 +138,30 @@ def validate_transaction_totals(df: pd.DataFrame, starting_balance: Decimal, end
             f"Sanity check failed: Starting balance {starting_balance} + total amount {total_amount} != ending balance {ending_balance}")
 
 
+def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Check the columns header; if there are multiple adjacent columns with the same header, combine them into one by concatenating their text."""
+    new_df = pd.DataFrame(index=df.index)
+
+    col_iter = iter(range(len(df.columns)))
+    for i in col_iter:
+        col_name = df.columns[i]
+        combined_col = df.iloc[:, i].astype(str)
+
+        # Look ahead to combine adjacent columns with the same name
+        j = i + 1
+        while j < len(df.columns) and df.columns[j] == col_name:
+            combined_col += " " + df.iloc[:, j].astype(str)
+            j += 1
+
+        new_df[col_name] = combined_col.replace('nan', '', regex=False)
+
+        # Skip the columns we already processed
+        for _ in range(i + 1, j):
+            next(col_iter, None)
+
+    return new_df
+
+
 def clean_transaction_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean and filter transaction data."""
     # Drop rows with any null values
@@ -215,7 +241,18 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
     """
     try:
         # Create a document converter and convert the PDF
-        converter = DocumentConverter()
+        pipeline_options = PdfPipelineOptions()
+        pipeline_options.do_ocr = False
+        pipeline_options.do_table_structure = True
+
+        converter = DocumentConverter(
+            format_options={
+                InputFormat.PDF: PdfFormatOption(
+                    pipeline_options=pipeline_options
+                )
+            }
+        )
+
         result = converter.convert(pdf_path)
         doc = result.document
 
@@ -239,8 +276,7 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
         for i, table in enumerate(doc.tables, 1):
             print(f"\nProcessing table {i}...")
             df = table.export_to_dataframe()
-            print(df.columns)
-            print(df)
+            df = clean_columns(df)
             if not validate_transaction_table_columns(df, i):
                 continue
 
