@@ -180,6 +180,14 @@ def filter_payment_transactions(df: pd.DataFrame) -> pd.DataFrame:
     return df[~((df.iloc[:, -1] < 0) & (df.iloc[:, 1].str.startswith('Payment')))]
 
 
+def flip_amount_sign(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Flip positive amount to negative and vice versa
+    """
+    df.iloc[:, -1] = df.iloc[:, -1].apply(lambda x: -x)
+    return df
+
+
 def save_to_csv(df: pd.DataFrame, output_dir: str, original_filename: str) -> None:
     """
     Save DataFrame to CSV file using the original filename.
@@ -231,6 +239,8 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
         for i, table in enumerate(doc.tables, 1):
             print(f"\nProcessing table {i}...")
             df = table.export_to_dataframe()
+            print(df.columns)
+            print(df)
             if not validate_transaction_table_columns(df, i):
                 continue
 
@@ -256,6 +266,7 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
         # Filter out payment transactions
         combined_transaction_df = filter_payment_transactions(
             combined_transaction_df)
+        combined_transaction_df = flip_amount_sign(combined_transaction_df)
 
         # Get just the filename from the original path
         input_filename = os.path.basename(original_path)
