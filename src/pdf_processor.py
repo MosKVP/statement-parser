@@ -230,14 +230,15 @@ def save_to_csv(df: pd.DataFrame, output_dir: str, original_filename: str) -> No
     print(f"Saved result to: {csv_path}")
 
 
-def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
+def read_pdf_tables(pdf_path: str) -> list:
     """
-    Process a PDF using docling's document converter to extract and process tables.
+    Read and extract tables from a PDF file.
 
     Args:
         pdf_path (str): Path to the PDF file to process
-        output_dir (str): Directory where output files will be saved
-        original_path (str): Original input path for naming the output file
+
+    Returns:
+        list: List of raw tables from the document
     """
     try:
         # Create a document converter and convert the PDF
@@ -262,18 +263,33 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
         print(f"Document name: {doc.name}")
         print(f"Document origin: {doc.origin}")
         print(f"Document version: {doc.version}")
-
-        # Process tables if present
-        if not doc.tables:
-            print("\nNo tables found in the document")
-            return
-
-        print("\nTables Found:")
         print(f"Number of tables: {len(doc.tables)}")
+        return doc.tables
+
+    except Exception as e:
+        print(f"\nError reading document: {str(e)}")
+        print("Full error details:")
+        import traceback
+        traceback.print_exc()
+        return []
+
+
+def process_transaction_tables(tables: list, output_dir: str, original_filename: str) -> None:
+    """
+    Process extracted transaction tables and save to CSV.
+
+    Args:
+        tables (list): List of raw tables from the document
+        output_dir (str): Directory where output files will be saved
+        original_filename (str): Original filename for naming the output file
+    """
+    try:
+        if not tables:
+            return
 
         # Process and combine all transaction tables
         transaction_dfs = []
-        for i, table in enumerate(doc.tables, 1):
+        for i, table in enumerate(tables, 1):
             print(f"\nProcessing table {i}...")
             df = table.export_to_dataframe()
             df = clean_columns(df)
@@ -294,8 +310,7 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
 
         combined_transaction_df = clean_transaction_data(
             combined_transaction_df)
-        combined_transaction_df = convert_data_types(
-            combined_transaction_df)
+        combined_transaction_df = convert_data_types(combined_transaction_df)
         validate_transaction_totals(
             combined_transaction_df, starting_balance, ending_balance)
 
@@ -304,16 +319,31 @@ def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
             combined_transaction_df)
         combined_transaction_df = flip_amount_sign(combined_transaction_df)
 
-        # Get just the filename from the original path
-        input_filename = os.path.basename(original_path)
         # Save the transaction data with original filename
-        save_to_csv(combined_transaction_df, output_dir, input_filename)
+        save_to_csv(combined_transaction_df, output_dir, original_filename)
 
     except Exception as e:
-        print(f"\nError processing document: {str(e)}")
+        print(f"\nError processing transaction tables: {str(e)}")
         print("Full error details:")
         import traceback
         traceback.print_exc()
+
+
+def process_pdf(pdf_path: str, output_dir: str, original_path: str) -> None:
+    """
+    Process a PDF using docling's document converter to extract and process tables.
+
+    Args:
+        pdf_path (str): Path to the PDF file to process
+        output_dir (str): Directory where output files will be saved
+        original_path (str): Original input path for naming the output file
+    """
+    # Read tables from PDF
+    tables = read_pdf_tables(pdf_path)
+
+    # Process the extracted tables
+    original_filename = os.path.basename(original_path)
+    process_transaction_tables(tables, output_dir, original_filename)
 
 
 def main() -> None:

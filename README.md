@@ -92,6 +92,71 @@ pip install -r requirements.txt
 deactivate
 ```
 
+## Testing
+
+The project includes a comprehensive test suite to ensure the functionality of the PDF processor. Here's how to run the tests:
+
+1. Make sure you're in the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+2. Run the test suite:
+
+```bash
+python -m pytest tests/ -v
+```
+
+The test suite includes:
+
+- Unit tests for individual functions
+- Integration tests for PDF processing
+- Tests for encrypted PDF handling
+- Data validation tests
+
+### Test Data
+
+The test suite uses sample PDFs generated with test data. These PDFs are automatically created when running the tests. The test data includes:
+
+- Sample transaction tables
+- Encrypted PDFs
+- Various transaction scenarios
+
+To manually generate test PDFs:
+
+1. Make sure you're in the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+2. Run the test PDF generator:
+
+```bash
+python tests/test_data/create_test_pdf.py
+```
+
+This will create a sample PDF with test transaction data in the `tests/test_data` directory. 
+
+To generate an encrypted test PDF:
+
+```bash
+python tests/test_data/create_encrypted_pdf.py
+```
+
+This will create an encrypted PDF with the same test data, using the password 'test123'.
+
+### Test Coverage
+
+To check test coverage:
+
+```bash
+python -m pytest --cov=src tests/ -v
+```
+
+This will show you the percentage of code covered by tests.
+
 ## Usage
 
 ### Basic Usage
