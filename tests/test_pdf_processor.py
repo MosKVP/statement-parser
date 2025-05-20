@@ -64,6 +64,16 @@ def encrypted_pdf_path():
         create_encrypted_pdf(input_path, str(pdf_path), 'test123')
     return str(pdf_path)
 
+
+@pytest.fixture
+def expected_keywords():
+    return [
+        ['TRANS. DATE'],  # Transaction date column
+        ['POSTING DATE'],  # Posting date column
+        ['DESCRIPTION'],  # Description column
+        ['AMOUNT', 'BAHT']  # Amount column
+    ]
+
 # Test cases for clean_amount
 
 
@@ -86,27 +96,27 @@ def test_clean_amount_invalid():
 # Test cases for validate_transaction_table_columns
 
 
-def test_validate_transaction_table_columns_valid(sample_transaction_df):
-    assert validate_transaction_table_columns(sample_transaction_df, 1) is True
+def test_validate_transaction_table_columns_valid(sample_transaction_df, expected_keywords):
+    assert validate_transaction_table_columns(sample_transaction_df, 1, expected_keywords) is True
 
 
-def test_validate_transaction_table_columns_invalid_columns():
+def test_validate_transaction_table_columns_invalid_columns(expected_keywords):
     df = pd.DataFrame({
         'TRANS. DATE': ['01/01/23'],
         'POSTING DATE': ['01/01/23'],
         'DESCRIPTION': ['Test']
     })
-    assert validate_transaction_table_columns(df, 1) is False
+    assert validate_transaction_table_columns(df, 1, expected_keywords) is False
 
 
-def test_validate_transaction_table_columns_invalid_headers():
+def test_validate_transaction_table_columns_invalid_headers(expected_keywords):
     df = pd.DataFrame({
         'DATE': ['01/01/23'],
         'POST DATE': ['01/01/23'],
         'DESC': ['Test'],
         'VALUE': ['100.00']
     })
-    assert validate_transaction_table_columns(df, 1) is False
+    assert validate_transaction_table_columns(df, 1, expected_keywords) is False
 
 # Test cases for convert_data_types
 

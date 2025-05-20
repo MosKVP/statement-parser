@@ -85,17 +85,11 @@ def get_pdf_bytes(input_path: str, password: Optional[str] = None) -> Optional[b
     return None
 
 
-def validate_transaction_table_columns(df: pd.DataFrame, table_index: int) -> bool:
+def validate_transaction_table_columns(df: pd.DataFrame, table_index: int, expected_keywords: list) -> bool:
     """
     Validate that the table has the expected number of columns and correct header names.
     """
-    expected_columns = 4
-    expected_keywords = [
-        ['TRANS. DATE'],  # Transaction date column
-        ['POSTING DATE'],  # Posting date column
-        ['DESCRIPTION'],  # Description column
-        ['AMOUNT', 'BAHT']  # Amount column
-    ]
+    expected_columns = len(expected_keywords)
 
     # Check number of columns
     if len(df.columns) != expected_columns:
@@ -283,6 +277,13 @@ def process_transaction_tables(tables: list, output_dir: str, original_filename:
         output_dir (str): Directory where output files will be saved
         original_filename (str): Original filename for naming the output file
     """
+
+    expected_keywords = [
+        ['TRANS. DATE'],  # Transaction date column
+        ['POSTING DATE'],  # Posting date column
+        ['DESCRIPTION'],  # Description column
+        ['AMOUNT', 'BAHT']  # Amount column
+    ]
     try:
         if not tables:
             return
@@ -291,10 +292,14 @@ def process_transaction_tables(tables: list, output_dir: str, original_filename:
         transaction_dfs = []
         for i, table in enumerate(tables, 1):
             print(f"\nProcessing table {i}...")
+
             df = table.export_to_dataframe()
             df = clean_columns(df)
-            if not validate_transaction_table_columns(df, i):
+            if not validate_transaction_table_columns(df, i, expected_keywords):
                 continue
+
+            # Standardize column names
+            df.columns = [" ".join(keywords) for keywords in expected_keywords]
 
             transaction_dfs.append(df)
 
@@ -304,7 +309,6 @@ def process_transaction_tables(tables: list, output_dir: str, original_filename:
 
         # Combine all transaction tables
         combined_transaction_df = pd.concat(transaction_dfs)
-
         starting_balance = clean_amount(combined_transaction_df.iloc[0, -1])
         ending_balance = clean_amount(combined_transaction_df.iloc[-1, -1])
 
