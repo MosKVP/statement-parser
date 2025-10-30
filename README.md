@@ -2,10 +2,15 @@
 
 A Python utility for processing PDF bank statements, extracting transaction tables, and converting them to CSV format with data validation and cleaning.
 
+**🚀 New to this tool? Check out the [Quick Start Guide](QUICKSTART.md) to get up and running in 5 minutes!**
+
 ## Features
 
 - PDF decryption support for password-protected files
 - Automatic table detection and extraction
+- **Interactive UI with human-in-the-loop processing** ⭐ NEW
+- Visual PDF preview with detected table overlays
+- Manual table selection and editing capabilities
 - Transaction data validation and cleaning
 - Payment transaction filtering
 - Data type conversion (dates and amounts)
@@ -15,22 +20,45 @@ A Python utility for processing PDF bank statements, extracting transaction tabl
 ## Requirements
 
 - Python 3.6+
-- Dependencies:
+- Poppler (required for PDF to image conversion in interactive mode)
+- Python Dependencies:
   - PyPDF2
   - pandas
   - docling
-  - decimal
+  - streamlit (for interactive mode)
+  - pdf2image (for interactive mode)
+  - pillow (for interactive mode)
+  - matplotlib (for interactive mode)
 
 ## Installation
 
-1. Clone the repository:
+### 1. Install System Dependencies
+
+For interactive mode, you need to install Poppler:
+
+**On macOS:**
+
+```bash
+brew install poppler
+```
+
+**On Ubuntu/Debian:**
+
+```bash
+sudo apt-get install poppler-utils
+```
+
+**On Windows:**
+Download and install from: https://github.com/oschwartz10612/poppler-windows/releases
+
+### 2. Clone the repository:
 
 ```bash
 git clone <repository-url>
 cd pdf-processor
 ```
 
-2. Install the required dependencies:
+### 3. Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -137,7 +165,7 @@ source venv/bin/activate
 python tests/test_data/create_test_pdf.py
 ```
 
-This will create a sample PDF with test transaction data in the `tests/test_data` directory. 
+This will create a sample PDF with test transaction data in the `tests/test_data` directory.
 
 To generate an encrypted test PDF:
 
@@ -159,19 +187,63 @@ This will show you the percentage of code covered by tests.
 
 ## Usage
 
-### Basic Usage
+### Interactive Mode (Recommended) 🎨
+
+The interactive mode provides a web-based UI where you can:
+
+- Upload PDF files
+- View PDF pages with detected table overlays
+- Select which tables to process
+- Edit table data (add/remove rows, remove columns, edit cells)
+- Preview and save results
+
+**To launch the interactive UI:**
+
+```bash
+./run_interactive.sh
+```
+
+Or manually:
+
+```bash
+streamlit run src/interactive_processor.py
+```
+
+This will open a web browser with the interactive interface. The interface includes:
+
+1. **PDF Preview Tab**: View your PDF with red boxes showing detected tables
+2. **Select & Edit Tables Tab**: Choose which tables to keep and edit their contents
+3. **Save Results Tab**: Preview combined data and save to CSV
+
+#### Interactive Mode Features:
+
+- **Visual Table Detection**: See exactly where docling detected tables on each page
+- **Table Selection**: Choose only the tables you need
+- **Inline Editing**:
+  - Add rows with the '+' button
+  - Delete rows with the '×' button
+  - Edit any cell directly in the table
+  - Remove unwanted columns
+- **Real-time Preview**: See your changes immediately
+- **Encrypted PDF Support**: Enter password in the sidebar for encrypted PDFs
+
+### Command Line Mode (Automated)
+
+For automated processing without human intervention:
+
+#### Basic Usage
 
 ```bash
 python src/pdf_processor.py input.pdf
 ```
 
-### With Password (for encrypted PDFs)
+#### With Password (for encrypted PDFs)
 
 ```bash
 python src/pdf_processor.py input.pdf --password your_password
 ```
 
-### Custom Output Directory
+#### Custom Output Directory
 
 ```bash
 python src/pdf_processor.py input.pdf --output-dir custom_directory
